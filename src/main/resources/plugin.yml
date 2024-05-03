@@ -1,0 +1,8 @@
+name: TimeLimitDrop
+version: '${project.version}'
+main: xaviermc.top.timelimitdrop.TimeLimitDrop
+api-version: '1.20'
+
+depend:
+  - LuckPerms
+  - AngelChest

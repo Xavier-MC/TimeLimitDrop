@@ -1,0 +1,4 @@
+# TimeLimitDrop 配置文件
+
+# 最大游玩时间（单位：分钟）
+maxPlayTime: 300
