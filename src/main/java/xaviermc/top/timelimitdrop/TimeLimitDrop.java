@@ -25,36 +25,17 @@ public class TimeLimitDrop extends JavaPlugin implements Listener {
         maxPlayTime = config.getInt("maxPlayTime");
         luckPerms = LuckPermsProvider.get();
         getServer().getPluginManager().registerEvents(this, this);
-        Bukkit.getScheduler().runTaskTimer(this, this::checkPlayersPlayTime, 0, 20 * 60);
         getLogger().info("TimeLimitDrop 已加载！");
-    }
-
-    private void checkPlayersPlayTime() {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            int playTimeMinutes = player.getStatistic(org.bukkit.Statistic.PLAY_ONE_MINUTE) / 20 / 60;
-            String playerName = player.getName();
-            boolean exceedLimit = playTimeMinutes >= maxPlayTime;
-            setPermission(player, !exceedLimit);
-            getLogger().info(playerName + " 的游玩时间：" + playTimeMinutes + " 分钟，权限已更新：" + !exceedLimit);
-        }
-    }
-
-    private void setPermission(Player player, boolean hasPermission) {
-        User user = luckPerms.getUserManager().getUser(player.getUniqueId());
-        if (user != null) {
-            user.data().add(Node.builder("angelchest.fetch").value(hasPermission).build());
-            luckPerms.getUserManager().saveUser(user);
-        }
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if (!player.hasPlayedBefore()) {
+        int playTimeMinutes = player.getStatistic(org.bukkit.Statistic.PLAY_ONE_MINUTE) / 20 / 60;
+        if (!player.hasPlayedBefore() || playTimeMinutes < maxPlayTime) {
             setPermission(player, true);
         }
         player.incrementStatistic(org.bukkit.Statistic.PLAY_ONE_MINUTE);
-        checkPlayersPlayTime();
     }
 
     @EventHandler
@@ -71,6 +52,19 @@ public class TimeLimitDrop extends JavaPlugin implements Listener {
             }, 20 * 3);
         } else {
             setPermission(player, false);
+        }
+    }
+
+    private void setPermission(Player player, boolean hasPermission) {
+        User user = luckPerms.getUserManager().getUser(player.getUniqueId());
+        String playerName = player.getName();
+        int playTimeMinutes = player.getStatistic(org.bukkit.Statistic.PLAY_ONE_MINUTE) / 20 / 60;
+
+        if (user != null) {
+            user.data().add(Node.builder("angelchest.fetch").value(hasPermission).build());
+            luckPerms.getUserManager().saveUser(user);
+
+            getLogger().info(playerName + " 游玩时间：" + playTimeMinutes + " 分钟，权限设置情况：" + (hasPermission ? "已设置" : "未设置"));
         }
     }
 }
